@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Detective de Letras</title>
+<style>
+:root{--bg:#fff8e7;--card:#fff;--tx:#2b2d42;--mut:#6b6f85;--bd:#e8dfc8;--ok:#2a9d5c;--okb:#dff5e8;--no:#d6453d;--nob:#fde4e2;--ac:#5b5fef;--st:#f5b301;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1f2e;--card:#2a2d42;--tx:#f4f1e8;--mut:#a9adc4;--bd:#3d4160;--okb:#1f4a34;--nob:#552725;--ac:#8c8fff}}
+:root[data-theme="dark"]{--bg:#1d1f2e;--card:#2a2d42;--tx:#f4f1e8;--mut:#a9adc4;--bd:#3d4160;--okb:#1f4a34;--nob:#552725;--ac:#8c8fff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;min-height:100vh}
+main{max-width:620px;margin:0 auto;padding:16px}
+h1{font-size:1.7rem;margin:.2em 0;text-align:center}
+.sub{text-align:center;color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:2px solid var(--bd);border-radius:18px;padding:14px;margin:10px 0;display:flex;gap:12px;align-items:center;cursor:pointer;width:100%;text-align:left;color:var(--tx);font:inherit}
+.card:active{transform:scale(.98)}
+.card .e{font-size:2.2rem}.card b{display:block;font-size:1.1rem}.card small{color:var(--mut)}
+.stars{margin-left:auto;font-size:1.2rem;white-space:nowrap}
+.bar{height:12px;background:var(--bd);border-radius:9px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--mut)}
+.link{background:none;border:0;color:var(--ac);font:inherit;font-weight:bold;cursor:pointer;padding:6px}
+.q{text-align:center;margin-top:8px}
+.big{font-size:4.5rem;line-height:1.1}
+.p{font-size:1.3rem;font-weight:bold;margin:6px 0}
+.gap{font-size:2.4rem;letter-spacing:.08em;font-weight:bold}
+.say{background:var(--ac);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:inherit;font-weight:bold;cursor:pointer;margin:6px 0}
+.opts{display:grid;gap:10px;margin-top:10px}
+.opt{background:var(--card);color:var(--tx);border:3px solid var(--bd);border-radius:16px;padding:14px;font:inherit;font-size:1.5rem;font-weight:bold;cursor:pointer}
+.opt.ok{background:var(--okb);border-color:var(--ok)}.opt.no{background:var(--nob);border-color:var(--no)}
+.opt.sent{font-size:1.2rem}
+.fb{min-height:3.2em;margin:12px 0 4px;font-size:1.1rem;text-align:center}
+.next{display:block;margin:6px auto;background:var(--ok);color:#fff;border:0;border-radius:999px;padding:12px 28px;font:inherit;font-size:1.1rem;font-weight:bold;cursor:pointer}
+.end{text-align:center}.end .big{font-size:3.5rem}
+</style></head><body><main id="app"></main>
+<script>
+// [emoji, pregunta/texto, correcta, incorrectas[], palabra a decir, pista]
+var P_OM="Escucha cada sílaba y no te saltes ninguna.";
+var GAP={"b/p":"La p se dice con un golpecito de labios; la b suena más suave.","d/t":"La t es más seca y fuerte; la d es más suave.","b/d":"Mira bien: la b tiene la barriga a la derecha; la d, a la izquierda.","p/q":"La p lleva el palito abajo y la q lleva la u detrás. Piensa: ¡queso!","f/z":"La f se hace mordiendo suave el labio; la z sopla entre los dientes."};
+var M=[
+{n:"Letras que se escapan",e:"🔍",d:"Omisiones y adiciones",t:"om",q:[
+["🍽️","¿Cuál está bien escrita?","plato",["pato","platoo"],"plato",P_OM],
+["🐘","¿Cuál está bien escrita?","elefante",["elefate","elefaante"],"elefante",P_OM],
+["🚪","¿Cuál está bien escrita?","puerta",["pueta","puertata"],"puerta",P_OM],
+["🦋","¿Cuál está bien escrita?","mariposa",["maripos","maripoosa"],"mariposa",P_OM],
+["📘","¿Cuál está bien escrita?","libro",["libo","libbro"],"libro",P_OM],
+["🍌","¿Cuál está bien escrita?","plátano",["patano","platanano"],"plátano",P_OM],
+["🏫","¿Cuál está bien escrita?","escuela",["escuea","escuuela"],"escuela",P_OM],
+["🕷️","¿Cuál está bien escrita?","araña",["aña","arañaa"],"araña",P_OM]]},
+{n:"Letras gemelas",e:"👯",d:"Sustitución de letras que suenan o se ven parecido",t:"su",q:[
+["⚽","_elota","p",["b"],"pelota","b/p"],["🚌","_us","b",["p"],"bus","b/p"],
+["🦷","_iente","d",["t"],"diente","d/t"],["🍅","_omate","t",["d"],"tomate","d/t"],
+["👆","_edo","d",["b"],"dedo","b/d"],["🍼","_iberón","b",["d"],"biberón","b/d"],
+["🧀","_ueso","q",["p"],"queso","p/q"],["🥔","_apa","p",["q"],"papa","p/q"],
+["👟","_apato","z",["f"],"zapato","f/z"],["🌸","_lor","f",["z"],"flor","f/z"]]},
+{n:"Palabras pegadas o partidas",e:"✂️",d:"Uniones y fragmentaciones",t:"un",q:[
+["🏠","¿Cuál está bien escrita?","Me voy a casa.",["Mevoy a casa.","Me voy acasa."],"Me voy a casa","Las palabras se separan donde haces una pausa al hablar."],
+["🧑‍🤝‍🧑","¿Cuál está bien escrita?","Mi amigo vive cerca.",["Mi a migo vive cerca.","Miamigo vive cerca."],"Mi amigo vive cerca","Amigo es una sola palabra: no se parte."],
+["🏡","¿Cuál está bien escrita?","La casa es grande.",["Lacasa es grande.","La ca sa es grande."],"La casa es grande","La y casa son dos palabras."],
+["🍦","¿Cuál está bien escrita?","Quiero un helado.",["Quierounhelado.","Quiero un he lado."],"Quiero un helado","Cuenta las palabras: ¡son tres!"],
+["🐕","¿Cuál está bien escrita?","El perro corre.",["Elperro corre.","El pe rro corre."],"El perro corre","El es una palabra y perro es otra."],
+["🌳","¿Cuál está bien escrita?","Vamos al parque.",["Vamosal parque.","Vamos a l parque."],"Vamos al parque","Al es una palabra pequeña, pero va completa."]]},
+{n:"Letras al revés",e:"🔄",d:"Inversión de letras dentro de la sílaba",t:"in",q:[
+["💼","¿Cuál está bien escrita?","trabajo",["tarbajo","trabjao"],"trabajo","Di la sílaba despacio: tra-ba-jo."],
+["📘","¿Cuál está bien escrita?","libro",["lirbo","bilro"],"libro","Di la sílaba despacio: li-bro."],
+["💪","¿Cuál está bien escrita?","brazo",["barzo","brzao"],"brazo","Di la sílaba despacio: bra-zo."],
+["🎈","¿Cuál está bien escrita?","globo",["goblo","lobgo"],"globo","Di la sílaba despacio: glo-bo."],
+["🚂","¿Cuál está bien escrita?","tren",["tern","trne"],"tren","Escucha: t-r-e-n."],
+["🧱","¿Cuál está bien escrita?","pared",["pader","parde"],"pared","Di la sílaba despacio: pa-red."],
+["🧴","¿Cuál está bien escrita?","crema",["cerma","cream"],"crema","Di la sílaba despacio: cre-ma."],
+["🌸","¿Cuál está bien escrita?","flor",["folr","frol"],"flor","Escucha: f-l-o-r."]]},
+{n:"Sílabas y sonidos",e:"👏",d:"Conciencia fonológica",t:"si",q:[
+["🐘","¿Cuántas sílabas tiene elefante?","4",["2","3"],"elefante","e-le-fan-te: pon la mano bajo la barbilla y cuenta."],
+["🐱","¿Cuántas sílabas tiene gato?","2",["1","3"],"gato","ga-to"],
+["🍦","¿Cuántas sílabas tiene helado?","3",["2","4"],"helado","he-la-do"],
+["☀️","¿Cuántas sílabas tiene sol?","1",["2","3"],"sol","sol: ¡un solo golpe de voz!"],
+["🦋","¿Cuántas sílabas tiene mariposa?","4",["3","5"],"mariposa","ma-ri-po-sa"],
+["🪟","¿Cuántas sílabas tiene ventana?","3",["2","4"],"ventana","ven-ta-na"],
+["🦇","¿Cuántas sílabas tiene murciélago?","4",["3","5"],"murciélago","mur-cié-la-go"],
+["🍌","¿Cuántas sílabas tiene plátano?","3",["2","4"],"plátano","plá-ta-no"]]}
+];
+
+var Q="¿Cuál está bien escrita?",PO="Escucha cada sílaba y no te saltes ninguna.",PI="Di la palabra despacio, sílaba por sílaba.",PU="Cuenta las palabras que dices: cada una va separada, pero ninguna se parte.";
+function om(e,c,w){return [e,Q,c,w,c,PO]}
+function inv(e,c,w){return [e,Q,c,w,c,PI]}
+function un(e,c,w){return [e,Q,c,w,c.replace(/[.,]/g,""),PU]}
+function si(e,p,c,w,t){return [e,"¿Cuántas sílabas tiene "+p+"?",""+c,w,p,t]}
+M[0].q=M[0].q.concat([om("🐊","cocodrilo",["cocodilo","cocodriilo"]),om("🚁","helicóptero",["helicótero","helicoptetero"]),om("🌈","arcoíris",["arcoris","arcoiriris"]),om("🧊","refrigerador",["refigerador","refrigeradoror"]),om("🏔️","montaña",["montña","montañaña"]),om("🦒","jirafa",["jiafa","jirafafa"]),om("🎹","instrumento",["instumento","instrumeento"]),om("🧑‍🏫","profesora",["profesoa","profesorara"])]);
+M[1].q=M[1].q.concat([["🐦","_ájaro","p",["b"],"pájaro","b/p"],["🎲","_ado","d",["b"],"dado","b/d"],["🐢","_ortuga","t",["d"],"tortuga","d/t"],["🧣","bu_anda","f",["z"],"bufanda","f/z"],["🦊","_orro","z",["f"],"zorro","f/z"],["🐖","cer_o","d",["t"],"cerdo","d/t"]]);
+M[2].q=M[2].q.concat([
+un("🗣️","Se lo dije ayer.",["Selo dije ayer.","Se lo di je ayer.","Se lodije ayer."]),
+un("🍽️","Ya me lo comí todo.",["Yame lo comí todo.","Ya me locomí todo.","Ya me lo co mí todo."]),
+un("🏖️","Voy a ir a la playa con mis primos.",["Voy a ira la playa con mis primos.","Voya ir a la playa con mis primos.","Voy a ir a la pla ya con mis primos."]),
+un("🌙","Nos vamos a dormir temprano.",["Nosvamos a dormir temprano.","Nos vamos adormir temprano.","Nos va mos a dormir temprano."]),
+un("🧠","Siempre me acuerdo de ti.",["Siempre meacuerdo de ti.","Siem pre me acuerdo de ti.","Siempre me a cuerdo de ti."]),
+un("🐦","Hay un pájaro en el árbol.",["Hay un pájaro enel árbol.","Haun pájaro en el árbol.","Hay un pá jaro en el árbol."]),
+un("🎒","Lo voy a hacer mañana.",["Lovoy a hacer mañana.","Lo voy ahacer mañana.","Lo voy a hacer ma ñana."]),
+un("⚽","Cuando salga del colegio, jugaré fútbol.",["Cuando salga delcolegio, jugaré fútbol.","Cuan do salga del colegio, jugaré fútbol.","Cuando salga del colegio, jugaréfútbol."]),
+un("📖","Me gusta leer un libro antes de dormir.",["Me gusta leerun libro antes de dormir.","Me gusta leer un libro antesde dormir.","Me gusta le er un libro antes de dormir."]),
+un("🐶","Mi perro se escapó por la ventana.",["Mi perro seescapó por la ventana.","Mi perro se escapó porla ventana.","Mi pe rro se escapó por la ventana."])]);
+M[3].q=M[3].q.concat([inv("📓","cuaderno",["cuadreno","cudaerno"]),inv("🌳","árbol",["ábrol","árlob"]),inv("🐝","abeja",["abjea","abeaj"]),inv("🍫","chocolate",["chocolta","chocoalte"]),inv("🐴","caballo",["cabalol","cablalo"]),inv("🎨","pintura",["pitnura","pinutra"]),inv("🧑‍⚕️","doctor",["dotcor","docort"]),inv("⏰","reloj",["rejol","relgo"])]);
+M[4].q=M[4].q.concat([si("🦒","jirafa",3,["2","4"],"ji-ra-fa"),si("🍪","galleta",3,["2","4"],"ga-lle-ta"),si("🐊","cocodrilo",4,["3","5"],"co-co-dri-lo"),si("🚁","helicóptero",5,["4","6"],"he-li-cóp-te-ro"),si("🏫","escuela",3,["2","4"],"es-cue-la"),si("🐜","hormiga",3,["2","4"],"hor-mi-ga"),si("📺","televisión",4,["3","5"],"te-le-vi-sión"),si("🧊","refrigerador",5,["4","6"],"re-fri-ge-ra-dor")]);
+var S={};try{S=JSON.parse(sessionStorage.getItem("dl")||"{}")}catch(e){}
+function save(){try{sessionStorage.setItem("dl",JSON.stringify(S))}catch(e){}}
+var app=document.getElementById("app"),G=null;
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function say(w){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(w);u.lang="es-CO";u.rate=.7;speechSynthesis.speak(u)}catch(e){}}
+function home(){
+ var h='<h1>🕵️ Detective de Letras</h1><p class="sub">Elige una misión y gana estrellas</p>';
+ M.forEach(function(m,i){var s=S[i]||0;h+='<button class="card" data-m="'+i+'"><span class="e">'+m.e+'</span><span><b>'+m.n+'</b><small>'+m.d+'</small></span><span class="stars">'+"⭐".repeat(s)+"☆".repeat(3-s)+'</span></button>'});
+ app.innerHTML=h;
+ app.querySelectorAll("[data-m]").forEach(function(b){b.onclick=function(){start(+b.dataset.m)}});
+}
+function start(i){G={m:i,q:sh(M[i].q).slice(0,15),i:0,ok:0};ask()}
+function ask(){
+ var m=M[G.m],q=G.q[G.i],gap=m.t==="su",opts=sh([q[2]].concat(q[3]));
+ var h='<div class="top"><button class="link" id="back">← Salir</button><span>'+(G.i+1)+' / '+G.q.length+'</span></div><div class="bar"><i style="width:'+(G.i/G.q.length*100)+'%"></i></div><div class="q"><div class="big">'+q[0]+'</div>';
+ h+=gap?'<div class="p">¿Qué letra falta?</div><div class="gap">'+q[1]+'</div>':'<div class="p">'+q[1]+'</div>';
+ h+='<button class="say" id="say">🔊 Escuchar</button></div><div class="opts" style="grid-template-columns:'+(m.t==="un"?'1fr':'repeat('+opts.length+',1fr)')+'">';
+ opts.forEach(function(o){h+='<button class="opt'+(m.t==="un"?' sent':'')+'">'+o+'</button>'});
+ h+='</div><div class="fb" id="fb"></div>';
+ app.innerHTML=h;
+ document.getElementById("back").onclick=home;
+ document.getElementById("say").onclick=function(){say(q[4])};
+ var done=false,missed=false;
+ app.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){
+  if(done)return;var good=b.textContent===q[2];
+  if(!good&&b.classList.contains("no"))return;
+  var fb=document.getElementById("fb");
+  if(good){done=true;G.ok+=missed?0:1;b.classList.add("ok");say(gap?q[4]:q[4]);
+   fb.innerHTML="🎉 <b>¡Muy bien!</b>"+(gap?" Es <b>"+q[4]+"</b>.":"");nextBtn()}
+  else{b.classList.add("no");missed=true;
+   fb.innerHTML="🤔 Casi. Pista: "+(gap?GAP[q[5]]:q[5])+" ¡Inténtalo otra vez!"}
+ }});
+ function nextBtn(){var n=document.createElement("button");n.className="next";n.textContent=G.i+1<G.q.length?"Siguiente ➜":"Ver resultado";n.onclick=function(){G.i++;G.i<G.q.length?ask():finish()};app.appendChild(n)}
+}
+function finish(){
+ var tot=G.q.length,wrong=document.querySelectorAll(".opt.no").length;
+ var ratio=G.ok/tot,s=ratio>=.9?3:ratio>=.6?2:1;
+ S[G.m]=Math.max(S[G.m]||0,s);save();
+ app.innerHTML='<div class="end"><div class="big">'+(s===3?"🏆":"🎖️")+'</div><h1>¡Misión cumplida!</h1><div class="stars" style="font-size:2.2rem;margin:0">'+"⭐".repeat(s)+"☆".repeat(3-s)+'</div><p>Acertaste <b>'+G.ok+'</b> de '+tot+' a la primera.</p><button class="next" id="again">Jugar otra vez</button><button class="link" id="hm">Volver al inicio</button></div>';
+ document.getElementById("again").onclick=function(){start(G.m)};
+ document.getElementById("hm").onclick=home;
+}
+home();
+</script></body></html>
